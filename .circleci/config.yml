@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: golang:1.6.4-jessie 
+      - image: golang:1.11.4
     steps:
       - checkout
       - run: go build
