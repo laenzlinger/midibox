@@ -5,4 +5,5 @@ jobs:
       - image: golang:1.11.4
     steps:
       - checkout
+      - run: dep ensure
       - run: go build
