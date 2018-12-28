@@ -5,6 +5,4 @@ jobs:
       - image: golang:1.11.4
     steps:
       - checkout
-      - run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-      - run: dep ensure
-      - run: go build
+      - run: env GOOS=linux GOARCH=arm GOARM=6 go build
