@@ -1,0 +1,4 @@
+github.com/warthog618/gpio v0.2.0 h1:ycZ82b+2mMbiN55GqqfIo6AHgJWDUsrfLF+/Yjk0WZM=
+github.com/warthog618/gpio v0.2.0/go.mod h1:VoWFcV+IlTg/ksPFSinzM4Ol5U322A+MO557i6/e2W0=
+golang.org/x/sys v0.0.0-20181228144115-9a3f9b0469bb h1:pf3XwC90UUdNPYWZdFjhGBE7DUFuK3Ct1zWmZ65QN30=
+golang.org/x/sys v0.0.0-20181228144115-9a3f9b0469bb/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
