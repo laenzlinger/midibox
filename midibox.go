@@ -27,6 +27,13 @@ const (
 	Down UpDown = false
 )
 
+func (upDown UpDown) String() string {
+	if upDown {
+		return "up"
+	}
+	return "down"
+}
+
 // JoystickDirection represents the position of the joystick
 //        North      
 //       --------
