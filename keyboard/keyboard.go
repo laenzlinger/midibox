@@ -65,15 +65,15 @@ const (
 
 func (dir JoystickDirection) String() string {
 	names := [...]string{
-		"Center",
-		"North",
-		"NorthEast",
-		"East",
-		"SouthEast",
-		"South",
-		"SouthWest",
-		"West",
-		"NorthWest",
+		"center",
+		"north",
+		"north-east",
+		"east",
+		"south-east",
+		"south",
+		"south-west",
+		"west",
+		"north-west",
 	}
 	if dir < Center || dir > NorthWest {
 		return "Unknown"
@@ -83,12 +83,12 @@ func (dir JoystickDirection) String() string {
 
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
-	direction JoystickDirection
-	fire      bool
+	Direction JoystickDirection
+	Fire      bool
 }
 
 func (j Joystick) String() string {
-	return fmt.Sprintf("%v fire:%v", j.direction, j.fire)
+	return fmt.Sprintf("%v fire:%v", j.Direction, j.Fire)
 }
 
 type buttonPin struct {
@@ -163,7 +163,7 @@ type joystickButtons struct {
 	fire  buttonPin
 }
 
-var inactiveJoystick = Joystick{direction: Center, fire: false}
+var inactiveJoystick = Joystick{Direction: Center, Fire: false}
 
 func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 
@@ -173,8 +173,8 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 	var lastChanged = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var current = Joystick{
-			direction: defineJoystickDirection(b),
-			fire:      b.fire.pressed(),
+			Direction: defineJoystickDirection(b),
+			Fire:      b.fire.pressed(),
 		}
 
 		// debounce

@@ -1,2 +1,4 @@
+github.com/pbnjay/pixfont v0.0.0-20171109033744-80412ecf517a h1:eBvyX54eQAhZWBG/Ng67vhLILaWaf9ZFqnvQZRkihXc=
+github.com/pbnjay/pixfont v0.0.0-20171109033744-80412ecf517a/go.mod h1:wG8B9TIIBxEYqwgBb9NEs/Gz5/ywV351SGZXRiVJJUA=
 periph.io/x/periph v3.4.0+incompatible h1:5gzxE4ryPq52cdqSw0mErR6pyJK8cBF2qdUAcOWh0bo=
 periph.io/x/periph v3.4.0+incompatible/go.mod h1:EWr+FCIU2dBWz5/wSWeiIUJTriYv9v2j2ENBmgYyy7Y=
