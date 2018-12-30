@@ -43,35 +43,35 @@ func (upDown UpDown) PinName() string {
 }
 
 // JoystickDirection represents the position of the joystick
-//        North
-//       --------
-// West  | None | East
-//       --------
+//         North
+//        --------
+// West  | Center | East
+//        --------
 //         South
 type JoystickDirection uint8
 
 const (
-	// None not moved
-	None JoystickDirection = iota
-	// North direction movement
+	// Center direction
+	Center JoystickDirection = iota
+	// North direction
 	North
-	// East direction movement
+	// East direction
 	East
-	// South direction movement
+	// South direction
 	South
-	// West direction movement
+	// West direction
 	West
 )
 
 func (dir JoystickDirection) String() string {
 	names := [...]string{
-		"None",
+		"Center",
 		"North",
 		"East",
 		"South",
 		"West",
 	}
-	if dir < None || dir > West {
+	if dir < Center || dir > West {
 		return "Unknown"
 	}
 	return names[dir]
@@ -91,31 +91,41 @@ func (dir JoystickDirection) PinName() string {
 
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
-	Direction JoystickDirection
-	Active    bool
+	direction JoystickDirection
+	active    bool
 }
 
-func watchUpDown(upDown chan<- UpDown, keyboardTicker *time.Ticker) {
+type buttonPin struct {
+   pin gpio.PinIO
+}
 
-	up := gpioreg.ByName(Up.PinName())
-	down := gpioreg.ByName(Down.PinName())
-
-	if err := up.In(gpio.PullUp, gpio.NoEdge); err != nil {
+func registerPin(name string) buttonPin {
+	pin := gpioreg.ByName(name)
+	if err := pin.In(gpio.PullUp, gpio.NoEdge); err != nil {
 		log.Fatal(err)
 	}
-	if err := down.In(gpio.PullUp, gpio.NoEdge); err != nil {
-		log.Fatal(err)
-	}
+	return buttonPin{pin: pin}
+}
+
+func (pin buttonPin) pressed() bool {
+	return pin.pin.Read() == gpio.Low
+}
+
+func watchUpDown(upDown chan<- UpDown) {
+	keyboardTicker := time.NewTicker(50 * time.Millisecond)
+
+	down := registerPin(Down.PinName())
+	up := registerPin(Up.PinName())
 
 	var active = false
 	var changed = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var value UpDown
 		var buttonPressed = false
-		if up.Read() == gpio.Low {
+		if up.pressed() {
 			buttonPressed = true
 			value = Up
-		} else if down.Read() == gpio.Low {
+		} else if down.pressed() {
 			buttonPressed = true
 			value = Down
 		}
@@ -137,22 +147,56 @@ func watchUpDown(upDown chan<- UpDown, keyboardTicker *time.Ticker) {
 	}
 }
 
-func watchJoystick(joystick chan<- Joystick, value JoystickDirection) {
-	p := gpioreg.ByName(value.PinName())
+func watchJoystick(joystick chan<- Joystick) {
+	keyboardTicker := time.NewTicker(50 * time.Millisecond)
 
-	if err := p.In(gpio.PullUp, gpio.FallingEdge); err != nil {
-		log.Fatal(err)
-	}
+	north := registerPin(North.PinName())
+	east := registerPin(East.PinName())
+	south := registerPin(South.PinName())
+	west := registerPin(West.PinName())
 
-	for {
-		p.WaitForEdge(-1)
-		joystick <- Joystick{
-			Direction: value,
-			Active:    false,
+	center := registerPin(Center.PinName()) 
+
+	var active = false
+	var changed = time.Now()
+	for tickTime := range keyboardTicker.C {
+		var value Joystick
+		var buttonPressed = false
+
+		
+		if north.pressed() {
+			value.direction = North
+			buttonPressed = true
+		} else if (east.pressed()) {
+			value.direction = East
+			buttonPressed = true
+		} else if (south.pressed()) {
+			value.direction = South
+			buttonPressed = true
+		} else if (west.pressed()) {
+			value.direction = West
+			buttonPressed = true
 		}
-		p.In(gpio.PullNoChange, gpio.NoEdge)
-		time.Sleep(250 * time.Millisecond)
-		p.In(gpio.PullNoChange, gpio.FallingEdge)
+		if (center.pressed()) {
+			value.active = true
+			buttonPressed = true
+		}
+
+		if buttonPressed {
+			if active {
+				if time.Since(changed) > 500 * time.Millisecond {
+					joystick <- value
+				}		
+			} else {
+				active = true
+				changed = tickTime
+				joystick <- value
+			}
+		} else {
+			active = false
+			changed = time.Now()
+		}
+
 	}
 }
 
@@ -168,18 +212,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	keyboardTicker := time.NewTicker(50 * time.Millisecond)
 	upDown := make(chan UpDown)
-	go watchUpDown(upDown, keyboardTicker)
+	go watchUpDown(upDown)
 
 	joystick := make(chan Joystick)
-	// go watchJoystick(joystick, None)
-	// go watchJoystick(joystick, North)
-	// go watchJoystick(joystick, East)
-	// go watchJoystick(joystick, South)
-	// go watchJoystick(joystick, West)
+	go watchJoystick(joystick)
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		select {
 		case upDown := <-upDown:
 			fmt.Println("upDown:", upDown)
