@@ -100,7 +100,7 @@ func (j Joystick) String() string {
 }
 
 type buttonPin struct {
-   pin gpio.PinIO
+	pin gpio.PinIn
 }
 
 func registerPin(name string) buttonPin {
@@ -115,29 +115,31 @@ func (pin buttonPin) pressed() bool {
 	return pin.pin.Read() == gpio.Low
 }
 
-func watchUpDown(upDown chan<- UpDown) {
-	keyboardTicker := time.NewTicker(50 * time.Millisecond)
+type upDownButtons struct {
+	up   buttonPin
+	down buttonPin
+}
 
-	down := registerPin(Down.PinName())
-	up := registerPin(Up.PinName())
+func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
+	keyboardTicker := time.NewTicker(200 * time.Millisecond)
 
 	var active = false
 	var changed = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var value UpDown
 		var buttonPressed = false
-		if up.pressed() {
+		if b.up.pressed() {
 			buttonPressed = true
 			value = Up
-		} else if down.pressed() {
+		} else if b.down.pressed() {
 			buttonPressed = true
 			value = Down
 		}
 		if buttonPressed {
 			if active {
-				if time.Since(changed) > 2000 * time.Millisecond {
+				if time.Since(changed) > 500*time.Millisecond {
 					upDown <- value
-				}		
+				}
 			} else {
 				active = true
 				changed = tickTime
@@ -151,15 +153,29 @@ func watchUpDown(upDown chan<- UpDown) {
 	}
 }
 
-func watchJoystick(joystick chan<- Joystick) {
-	keyboardTicker := time.NewTicker(50 * time.Millisecond)
+// OpenUpDown open a channel that sends UpDown events
+func OpenUpDown() chan UpDown {
 
-	north := registerPin(North.PinName())
-	east := registerPin(East.PinName())
-	south := registerPin(South.PinName())
-	west := registerPin(West.PinName())
+	buttons := upDownButtons{
+		up:   registerPin(Up.PinName()),
+		down: registerPin(Down.PinName()),
+	}
 
-	center := registerPin(Center.PinName()) 
+	upDown := make(chan UpDown)
+	go watchUpDown(upDown, buttons)
+	return upDown
+}
+
+type joystickButtons struct {
+	north  buttonPin
+	east   buttonPin
+	south  buttonPin
+	west   buttonPin
+	center buttonPin
+}
+
+func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
+	keyboardTicker := time.NewTicker(200 * time.Millisecond)
 
 	var active = false
 	var changed = time.Now()
@@ -167,30 +183,29 @@ func watchJoystick(joystick chan<- Joystick) {
 		var value Joystick
 		var buttonPressed = false
 
-		
-		if north.pressed() {
+		if b.north.pressed() {
 			value.direction = North
 			buttonPressed = true
-		} else if (east.pressed()) {
+		} else if b.east.pressed() {
 			value.direction = East
 			buttonPressed = true
-		} else if (south.pressed()) {
+		} else if b.south.pressed() {
 			value.direction = South
 			buttonPressed = true
-		} else if (west.pressed()) {
+		} else if b.west.pressed() {
 			value.direction = West
 			buttonPressed = true
 		}
-		if (center.pressed()) {
+		if b.center.pressed() {
 			value.active = true
 			buttonPressed = true
 		}
 
 		if buttonPressed {
 			if active {
-				if time.Since(changed) > 2000 * time.Millisecond {
+				if time.Since(changed) > 500*time.Millisecond {
 					joystick <- value
-				}		
+				}
 			} else {
 				active = true
 				changed = tickTime
@@ -202,6 +217,22 @@ func watchJoystick(joystick chan<- Joystick) {
 		}
 
 	}
+}
+
+// OpenJoystick open a channel that sends Joystick events
+func OpenJoystick() chan Joystick {
+
+	buttons := joystickButtons{
+		north:  registerPin(North.PinName()),
+		east:   registerPin(East.PinName()),
+		south:  registerPin(South.PinName()),
+		west:   registerPin(West.PinName()),
+		center: registerPin(Center.PinName()),
+	}
+
+	joystick := make(chan Joystick)
+	go watchJoystick(joystick, buttons)
+	return joystick
 }
 
 func main() {
@@ -216,17 +247,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	upDown := make(chan UpDown)
-	go watchUpDown(upDown)
-
-	joystick := make(chan Joystick)
-	go watchJoystick(joystick)
-
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 10; i++ {
 		select {
-		case upDown := <-upDown:
+		case upDown := <-OpenUpDown():
 			fmt.Println("upDown:", upDown)
-		case joystick := <-joystick:
+		case joystick := <-OpenJoystick():
 			fmt.Println("joystick:", joystick)
 		}
 	}
