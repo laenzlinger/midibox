@@ -95,6 +95,10 @@ type Joystick struct {
 	active    bool
 }
 
+func (j Joystick) String() string {
+	return fmt.Sprintf("%v %v", j.direction, j.active)
+}
+
 type buttonPin struct {
    pin gpio.PinIO
 }
@@ -131,7 +135,7 @@ func watchUpDown(upDown chan<- UpDown) {
 		}
 		if buttonPressed {
 			if active {
-				if time.Since(changed) > 500 * time.Millisecond {
+				if time.Since(changed) > 2000 * time.Millisecond {
 					upDown <- value
 				}		
 			} else {
@@ -184,7 +188,7 @@ func watchJoystick(joystick chan<- Joystick) {
 
 		if buttonPressed {
 			if active {
-				if time.Since(changed) > 500 * time.Millisecond {
+				if time.Since(changed) > 2000 * time.Millisecond {
 					joystick <- value
 				}		
 			} else {
