@@ -60,7 +60,7 @@ func drawText(dev *ssd1306.Dev, lines ...string ) {
 	font := pixfont.DefaultFont
 	font.SetVariableWidth(true)
 	for i, line := range lines {
-		font.DrawString(img, 0, i*10, line, color.White)
+		font.DrawString(img, 0, i*11, line, color.White)
 	}
 	dev.Draw(img.Bounds(), img, image.Point{})
 }
