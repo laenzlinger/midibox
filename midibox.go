@@ -34,6 +34,15 @@ func (upDown UpDown) String() string {
 	return "down"
 }
 
+// PinName returns the name of the GPIO pin
+func (upDown UpDown) PinName() string {
+	if upDown {
+		return "GPIO6"
+	}
+	return "GPIO6"
+}
+
+
 // JoystickDirection represents the position of the joystick
 //        North      
 //       --------
@@ -69,14 +78,26 @@ func (dir JoystickDirection) String() string {
     return names[dir]
 }
 
+// PinName returns the name of the GPIO pin
+func (dir JoystickDirection) PinName() string {
+    pinNames := [...]string{
+        "GPIO4", 
+        "GPIO17", 
+        "GPIO23", 
+        "GPIO22",
+		"GPIO27", 
+	}
+    return pinNames[dir]
+}
+
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
 	Direction JoystickDirection
 	Active bool
 }
 
-func watchUpDown(upDown chan <- UpDown, pinName string, value UpDown) {
-	p := gpioreg.ByName(pinName)
+func watchUpDown(upDown chan <- UpDown, value UpDown) {
+	p := gpioreg.ByName(value.PinName())
 
 	if err := p.In(gpio.PullUp, gpio.FallingEdge); err != nil {
 		log.Fatal(err)
@@ -91,8 +112,8 @@ func watchUpDown(upDown chan <- UpDown, pinName string, value UpDown) {
 	}
 }
 
-func watchJoystick(joystick chan <- Joystick, pinName string, value JoystickDirection) {
-	p := gpioreg.ByName(pinName)
+func watchJoystick(joystick chan <- Joystick, value JoystickDirection) {
+	p := gpioreg.ByName(value.PinName())
 
 	if err := p.In(gpio.PullUp, gpio.FallingEdge); err != nil {
 		log.Fatal(err)
@@ -110,7 +131,6 @@ func watchJoystick(joystick chan <- Joystick, pinName string, value JoystickDire
 	}
 }
 
-
 func main() {
 
 	conn, err := net.Dial("udp", "127.0.0.1:5006")
@@ -124,17 +144,15 @@ func main() {
 	}
 
 	upDown := make(chan UpDown)
-	go watchUpDown(upDown, "GPIO5", Down)
-	go watchUpDown(upDown, "GPIO6", Up)
-	
+	go watchUpDown(upDown, Down)
+	go watchUpDown(upDown, Up)
 
 	joystick := make(chan Joystick)
-	go watchJoystick(joystick, "GPIO4", None)
-	go watchJoystick(joystick, "GPIO17", North)
-	go watchJoystick(joystick, "GPIO23", East)
-	go watchJoystick(joystick, "GPIO22", South)
-	go watchJoystick(joystick, "GPIO27", West)
-
+	go watchJoystick(joystick, None)
+	go watchJoystick(joystick, North)
+	go watchJoystick(joystick, East)
+	go watchJoystick(joystick, South)
+	go watchJoystick(joystick, West)
 
 	for i := 0; i < 10; i++ {
         select {
