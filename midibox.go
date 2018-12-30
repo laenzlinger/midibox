@@ -11,23 +11,58 @@ import (
 	"periph.io/x/periph/host"
 )
 
+// UpDown is sent when one of the up/down buttons is pressed. 
+//  -------------------
+//           |        |
+//   OLED    |     x  | up button
+//   display |  x     | down button
+//           |        |
+//  -------------------
 type UpDown bool
 
 const (
+	// Up button
 	Up UpDown = true
+	// Down button
 	Down UpDown = false
 )
 
+// JoystickDirection represents the position of the joystick
+//        North      
+//       --------
+// West  | None | East
+//       --------
+//         South
 type JoystickDirection uint8
 
 const (
+	// None not moved
 	None  JoystickDirection = iota 
+	// North direction movement
 	North
+	// East direction movement
 	East 
+	// South direction movement
 	South
+	// West direction movement
 	West
 )
 
+func (dir JoystickDirection) String() string {
+    names := [...]string{
+        "None", 
+        "North", 
+        "East", 
+        "South",
+		"West", 
+	}
+    if dir < None || dir > West {
+      return "Unknown"
+    }
+    return names[dir]
+}
+
+// Joystick is sent when a joystick action is detected.
 type Joystick struct {
 	Direction JoystickDirection
 	Active bool
