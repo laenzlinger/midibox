@@ -9,7 +9,6 @@ import (
 	"periph.io/x/periph/conn/gpio/gpioreg"
 )
 
-
 // UpDown is sent when one of the up/down buttons is pressed.
 //  -------------------
 //           |        |
@@ -34,11 +33,12 @@ func (upDown UpDown) String() string {
 }
 
 // JoystickDirection represents the position of the joystick
-//         North
-//        --------
-// West  | Center | East
-//        --------
-//         South
+//
+//    NorthWest   North    NorthEast
+//               --------
+//  West        | Center |       East
+//               --------
+//    SouthWest   South   SouthEast
 type JoystickDirection uint8
 
 const (
@@ -46,23 +46,35 @@ const (
 	Center JoystickDirection = iota
 	// North direction
 	North
+	// NorthEast direction
+	NorthEast
 	// East direction
 	East
+	// SouthEast direction
+	SouthEast
 	// South direction
 	South
+	// SouthWest direction
+	SouthWest
 	// West direction
 	West
+	// NorthWest direction
+	NorthWest
 )
 
 func (dir JoystickDirection) String() string {
 	names := [...]string{
 		"Center",
 		"North",
+		"NorthEast",
 		"East",
+		"SouthEast",
 		"South",
+		"SouthWest",
 		"West",
+		"NorthWest",
 	}
-	if dir < Center || dir > West {
+	if dir < Center || dir > NorthWest {
 		return "Unknown"
 	}
 	return names[dir]
@@ -162,19 +174,32 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 		var value Joystick
 		var buttonPressed = false
 
-		if b.north.pressed() {
+		if b.north.pressed() && !b.east.pressed() && !b.west.pressed() {
 			value.direction = North
 			buttonPressed = true
-		} else if b.east.pressed() {
+		} else if b.east.pressed() && b.north.pressed() {
+			value.direction = NorthEast
+			buttonPressed = true
+		} else if b.east.pressed() && !b.north.pressed() && !b.south.pressed() {
 			value.direction = East
 			buttonPressed = true
-		} else if b.south.pressed() {
+		} else if b.east.pressed() && b.south.pressed() {
+			value.direction = SouthEast
+			buttonPressed = true
+		} else if b.south.pressed() && !b.west.pressed() && !b.east.pressed() {
 			value.direction = South
 			buttonPressed = true
-		} else if b.west.pressed() {
+		} else if b.south.pressed() && b.west.pressed() {
+			value.direction = SouthWest
+			buttonPressed = true
+		} else if b.west.pressed() && !b.north.pressed() && !b.south.pressed() {
 			value.direction = West
 			buttonPressed = true
+		} else if b.north.pressed() && b.west.pressed() {
+			value.direction = NorthWest
+			buttonPressed = true
 		}
+
 		if b.center.pressed() {
 			value.active = true
 			buttonPressed = true
@@ -202,11 +227,11 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 func OpenJoystick() chan Joystick {
 
 	buttons := joystickButtons{
-		center:  registerPin("GPIO4"),
-		north:   registerPin("GPIO17"),
-		east:  registerPin("GPIO23"),
-		south:   registerPin("GPIO22"),
-		west: registerPin("GPIO27"),
+		center: registerPin("GPIO4"),
+		north:  registerPin("GPIO17"),
+		east:   registerPin("GPIO23"),
+		south:  registerPin("GPIO22"),
+		west:   registerPin("GPIO27"),
 	}
 
 	joystick := make(chan Joystick)

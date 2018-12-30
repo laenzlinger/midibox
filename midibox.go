@@ -24,7 +24,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		select {
 		case upDown := <-keyboard.OpenUpDown():
 			fmt.Println("upDown:", upDown)
