@@ -83,11 +83,11 @@ func (dir JoystickDirection) String() string {
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
 	direction JoystickDirection
-	active    bool
+	fire      bool
 }
 
 func (j Joystick) String() string {
-	return fmt.Sprintf("%v %v", j.direction, j.active)
+	return fmt.Sprintf("%v fire:%v", j.direction, j.fire)
 }
 
 type buttonPin struct {
@@ -158,68 +158,60 @@ func OpenUpDown() chan UpDown {
 }
 
 type joystickButtons struct {
-	north  buttonPin
-	east   buttonPin
-	south  buttonPin
-	west   buttonPin
-	center buttonPin
+	north buttonPin
+	east  buttonPin
+	south buttonPin
+	west  buttonPin
+	fire  buttonPin
 }
 
-func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
-	keyboardTicker := time.NewTicker(100 * time.Millisecond)
+var inactiveJoystick = Joystick{direction: Center, fire: false}
 
-	var active = false
+func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
+
+	keyboardTicker := time.NewTicker(50 * time.Millisecond)
+
+	var previous = inactiveJoystick
 	var changed = time.Now()
 	for tickTime := range keyboardTicker.C {
-		var value Joystick
-		var buttonPressed = false
-
-		if b.north.pressed() && !b.east.pressed() && !b.west.pressed() {
-			value.direction = North
-			buttonPressed = true
-		} else if b.east.pressed() && b.north.pressed() {
-			value.direction = NorthEast
-			buttonPressed = true
-		} else if b.east.pressed() && !b.north.pressed() && !b.south.pressed() {
-			value.direction = East
-			buttonPressed = true
-		} else if b.east.pressed() && b.south.pressed() {
-			value.direction = SouthEast
-			buttonPressed = true
-		} else if b.south.pressed() && !b.west.pressed() && !b.east.pressed() {
-			value.direction = South
-			buttonPressed = true
-		} else if b.south.pressed() && b.west.pressed() {
-			value.direction = SouthWest
-			buttonPressed = true
-		} else if b.west.pressed() && !b.north.pressed() && !b.south.pressed() {
-			value.direction = West
-			buttonPressed = true
-		} else if b.north.pressed() && b.west.pressed() {
-			value.direction = NorthWest
-			buttonPressed = true
+		var current = Joystick{
+			direction: defineJoystickDirection(b),
+			fire:      b.fire.pressed(),
 		}
 
-		if b.center.pressed() {
-			value.active = true
-			buttonPressed = true
-		}
-
-		if buttonPressed {
-			if active {
-				if time.Since(changed) > 500*time.Millisecond {
-					joystick <- value
-				}
-			} else {
-				active = true
-				changed = tickTime
-				joystick <- value
+		if current != previous && time.Since(changed) > 200*time.Millisecond {
+			previous = current
+			changed = tickTime
+			if current != inactiveJoystick {
+				joystick <- current
 			}
-		} else {
-			active = false
-			changed = time.Now()
 		}
 
+		if current != inactiveJoystick && time.Since(changed) > 1000*time.Millisecond {
+			joystick <- current
+		}
+	}
+}
+
+func defineJoystickDirection(b joystickButtons) JoystickDirection {
+	if b.north.pressed() && !b.east.pressed() && !b.west.pressed() {
+		return North
+	} else if b.east.pressed() && b.north.pressed() {
+		return NorthEast
+	} else if b.east.pressed() && !b.north.pressed() && !b.south.pressed() {
+		return East
+	} else if b.east.pressed() && b.south.pressed() {
+		return SouthEast
+	} else if b.south.pressed() && !b.west.pressed() && !b.east.pressed() {
+		return South
+	} else if b.south.pressed() && b.west.pressed() {
+		return SouthWest
+	} else if b.west.pressed() && !b.north.pressed() && !b.south.pressed() {
+		return West
+	} else if b.north.pressed() && b.west.pressed() {
+		return NorthWest
+	} else {
+		return Center
 	}
 }
 
@@ -227,11 +219,11 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 func OpenJoystick() chan Joystick {
 
 	buttons := joystickButtons{
-		center: registerPin("GPIO4"),
-		north:  registerPin("GPIO17"),
-		east:   registerPin("GPIO23"),
-		south:  registerPin("GPIO22"),
-		west:   registerPin("GPIO27"),
+		fire:  registerPin("GPIO4"),
+		north: registerPin("GPIO17"),
+		east:  registerPin("GPIO23"),
+		south: registerPin("GPIO22"),
+		west:  registerPin("GPIO27"),
 	}
 
 	joystick := make(chan Joystick)

@@ -23,12 +23,13 @@ func main() {
 	if _, err := host.Init(); err != nil {
 		log.Fatal(err)
 	}
-
-	for i := 0; i < 100; i++ {
+	upDown := keyboard.OpenUpDown()
+	joystick := keyboard.OpenJoystick()
+	for i := 0; i < 10; i++ {
 		select {
-		case upDown := <-keyboard.OpenUpDown():
+		case upDown := <-upDown:
 			fmt.Println("upDown:", upDown)
-		case joystick := <-keyboard.OpenJoystick():
+		case joystick := <-joystick:
 			fmt.Println("joystick:", joystick)
 		}
 	}
