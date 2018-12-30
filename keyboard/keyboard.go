@@ -115,33 +115,30 @@ type upDownButtons struct {
 func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 	keyboardTicker := time.NewTicker(100 * time.Millisecond)
 
-	var active = false
+	var previous = 0
 	var lastChanged = time.Now()
 	for tickTime := range keyboardTicker.C {
-		var value UpDown
-		var buttonPressed = false
+		var result UpDown
+		var current = 0
 		if b.up.pressed() {
-			buttonPressed = true
-			value = Up
+			current = 1
+			result = Up
 		} else if b.down.pressed() {
-			buttonPressed = true
-			value = Down
+			current = 2
+			result = Down
 		}
-		if buttonPressed {
-			if active {
-				if time.Since(lastChanged) > 500*time.Millisecond {
-					upDown <- value
-				}
-			} else {
-				active = true
-				lastChanged = tickTime
-				upDown <- value
+		// debounce
+		if current != previous && time.Since(lastChanged) > 200*time.Millisecond {
+			previous = current
+			lastChanged = tickTime
+			if current != 0 {
+				upDown <- result
 			}
-		} else {
-			active = false
-			lastChanged = time.Now()
 		}
-
+		// repeat
+		if current != 0 && time.Since(lastChanged) > 1000*time.Millisecond {
+			upDown <- result
+		}
 	}
 }
 
@@ -180,6 +177,7 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 			fire:      b.fire.pressed(),
 		}
 
+		// debounce
 		if current != previous && time.Since(lastChanged) > 200*time.Millisecond {
 			previous = current
 			lastChanged = tickTime
@@ -187,7 +185,7 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 				joystick <- current
 			}
 		}
-
+		// repeat
 		if current != inactiveJoystick && time.Since(lastChanged) > 1000*time.Millisecond {
 			joystick <- current
 		}
