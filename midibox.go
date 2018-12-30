@@ -34,14 +34,6 @@ func (upDown UpDown) String() string {
 	return "down"
 }
 
-// PinName returns the name of the GPIO pin
-func (upDown UpDown) PinName() string {
-	if upDown {
-		return "GPIO6"
-	}
-	return "GPIO5"
-}
-
 // JoystickDirection represents the position of the joystick
 //         North
 //        --------
@@ -77,18 +69,6 @@ func (dir JoystickDirection) String() string {
 	return names[dir]
 }
 
-// PinName returns the name of the GPIO pin
-func (dir JoystickDirection) PinName() string {
-	pinNames := [...]string{
-		"GPIO4",
-		"GPIO17",
-		"GPIO23",
-		"GPIO22",
-		"GPIO27",
-	}
-	return pinNames[dir]
-}
-
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
 	direction JoystickDirection
@@ -121,7 +101,7 @@ type upDownButtons struct {
 }
 
 func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
-	keyboardTicker := time.NewTicker(200 * time.Millisecond)
+	keyboardTicker := time.NewTicker(100 * time.Millisecond)
 
 	var active = false
 	var changed = time.Now()
@@ -157,8 +137,8 @@ func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 func OpenUpDown() chan UpDown {
 
 	buttons := upDownButtons{
-		up:   registerPin(Up.PinName()),
-		down: registerPin(Down.PinName()),
+		up:   registerPin("GPIO6"),
+		down: registerPin("GPIO5"),
 	}
 
 	upDown := make(chan UpDown)
@@ -175,7 +155,7 @@ type joystickButtons struct {
 }
 
 func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
-	keyboardTicker := time.NewTicker(200 * time.Millisecond)
+	keyboardTicker := time.NewTicker(100 * time.Millisecond)
 
 	var active = false
 	var changed = time.Now()
@@ -223,11 +203,11 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 func OpenJoystick() chan Joystick {
 
 	buttons := joystickButtons{
-		north:  registerPin(North.PinName()),
-		east:   registerPin(East.PinName()),
-		south:  registerPin(South.PinName()),
-		west:   registerPin(West.PinName()),
-		center: registerPin(Center.PinName()),
+		center:  registerPin("GPIO4"),
+		north:   registerPin("GPIO17"),
+		east:  registerPin("GPIO23"),
+		south:   registerPin("GPIO22"),
+		west: registerPin("GPIO27"),
 	}
 
 	joystick := make(chan Joystick)
