@@ -39,6 +39,7 @@ func (upDown UpDown) String() string {
 //  West        | Center |       East
 //               --------
 //    SouthWest   South   SouthEast
+//
 type JoystickDirection uint8
 
 const (
@@ -115,7 +116,7 @@ func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 	keyboardTicker := time.NewTicker(100 * time.Millisecond)
 
 	var active = false
-	var changed = time.Now()
+	var lastChanged = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var value UpDown
 		var buttonPressed = false
@@ -128,17 +129,17 @@ func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 		}
 		if buttonPressed {
 			if active {
-				if time.Since(changed) > 500*time.Millisecond {
+				if time.Since(lastChanged) > 500*time.Millisecond {
 					upDown <- value
 				}
 			} else {
 				active = true
-				changed = tickTime
+				lastChanged = tickTime
 				upDown <- value
 			}
 		} else {
 			active = false
-			changed = time.Now()
+			lastChanged = time.Now()
 		}
 
 	}
@@ -172,22 +173,22 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 	keyboardTicker := time.NewTicker(50 * time.Millisecond)
 
 	var previous = inactiveJoystick
-	var changed = time.Now()
+	var lastChanged = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var current = Joystick{
 			direction: defineJoystickDirection(b),
 			fire:      b.fire.pressed(),
 		}
 
-		if current != previous && time.Since(changed) > 200*time.Millisecond {
+		if current != previous && time.Since(lastChanged) > 200*time.Millisecond {
 			previous = current
-			changed = tickTime
+			lastChanged = tickTime
 			if current != inactiveJoystick {
 				joystick <- current
 			}
 		}
 
-		if current != inactiveJoystick && time.Since(changed) > 1000*time.Millisecond {
+		if current != inactiveJoystick && time.Since(lastChanged) > 1000*time.Millisecond {
 			joystick <- current
 		}
 	}
