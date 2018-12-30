@@ -4,25 +4,70 @@ import (
 	"fmt"
 	"net"
 	"log"
+	"time"
 
 	"periph.io/x/periph/conn/gpio"
     "periph.io/x/periph/conn/gpio/gpioreg"
 	"periph.io/x/periph/host"
 )
 
-func watchPin(level chan gpio.Level, pinName string) {
-	p := gpioreg.ByName(pinName)
-	fmt.Printf("%s: %s\n", p, p.Function())
+type UpDown bool
 
-	if err := p.In(gpio.PullUp, gpio.BothEdges); err != nil {
+const (
+	Up UpDown = true
+	Down UpDown = false
+)
+
+type JoystickDirection uint8
+
+const (
+	None  JoystickDirection = iota 
+	North
+	East 
+	South
+	West
+)
+
+type Joystick struct {
+	Direction JoystickDirection
+	Active bool
+}
+
+func watchUpDown(upDown chan <- UpDown, pinName string, value UpDown) {
+	p := gpioreg.ByName(pinName)
+
+	if err := p.In(gpio.PullUp, gpio.FallingEdge); err != nil {
 		log.Fatal(err)
 	}
 	
 	for {
 		p.WaitForEdge(-1)
-		level <- p.Read()
+		upDown <- value
+		p.In(gpio.PullNoChange, gpio.NoEdge)
+		time.Sleep(250 * time.Millisecond)
+		p.In(gpio.PullNoChange, gpio.FallingEdge)
 	}
 }
+
+func watchJoystick(joystick chan <- Joystick, pinName string, value JoystickDirection) {
+	p := gpioreg.ByName(pinName)
+
+	if err := p.In(gpio.PullUp, gpio.FallingEdge); err != nil {
+		log.Fatal(err)
+	}
+	
+	for {
+		p.WaitForEdge(-1)
+		joystick <- Joystick{
+			Direction: value,
+			Active: false,
+		}
+		p.In(gpio.PullNoChange, gpio.NoEdge)
+		time.Sleep(250 * time.Millisecond)
+		p.In(gpio.PullNoChange, gpio.FallingEdge)
+	}
+}
+
 
 func main() {
 
@@ -36,17 +81,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	down := make(chan gpio.Level)
-	go watchPin(down, "GPIO5")
-	up := make(chan gpio.Level)
-	go watchPin(up, "GPIO6")
+	upDown := make(chan UpDown)
+	go watchUpDown(upDown, "GPIO5", Down)
+	go watchUpDown(upDown, "GPIO6", Up)
 	
+
+	joystick := make(chan Joystick)
+	go watchJoystick(joystick, "GPIO17", North)
+	go watchJoystick(joystick, "GPIO23", East)
+	go watchJoystick(joystick, "GPIO22", South)
+	go watchJoystick(joystick, "GPIO27", West)
+
+
 	for i := 0; i < 10; i++ {
         select {
-		case level1 := <-up:
-			note(conn, level1, 0x3c)
-        case level2 := <-down:
-			note(conn, level2, 0x3d)
+		case upDown := <-upDown:
+			fmt.Println("upDown:", upDown)
+		case joystick := <-joystick:
+			fmt.Println("joystick:", joystick)
         }
     }
 
