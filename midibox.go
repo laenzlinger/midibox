@@ -87,6 +87,7 @@ func main() {
 	
 
 	joystick := make(chan Joystick)
+	go watchJoystick(joystick, "GPIO4", None)
 	go watchJoystick(joystick, "GPIO17", North)
 	go watchJoystick(joystick, "GPIO23", East)
 	go watchJoystick(joystick, "GPIO22", South)
