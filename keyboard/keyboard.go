@@ -16,20 +16,27 @@ import (
 //   display |  x     | down button
 //           |        |
 //  -------------------
-type UpDown bool
+type UpDown uint8
 
 const (
-	// Up button
-	Up UpDown = true
 	// Down button
-	Down UpDown = false
+	Down UpDown = iota
+	// Up button
+	Up
+	// Both buttons
+	Both
 )
 
 func (upDown UpDown) String() string {
-	if upDown {
-		return "up"
+	names := [...]string{
+		"down",
+		"up",
+		"both",
 	}
-	return "down"
+	if upDown < Down || upDown > Both {
+		return "Unknown"
+	}
+	return names[upDown]
 }
 
 // JoystickDirection represents the position of the joystick
@@ -122,15 +129,18 @@ func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 	for tickTime := range keyboardTicker.C {
 		var result UpDown
 		var current = 0
-		if b.up.pressed() {
+		if b.up.pressed() && b.down.pressed() {
 			current = 1
-			result = Up
+			result = Both
 		} else if b.down.pressed() {
 			current = 2
 			result = Down
+		} else if b.up.pressed() {
+			current = 3
+			result = Up
 		}
 		// debounce
-		if current != previous && time.Since(lastChanged) > 200*time.Millisecond {
+		if current != previous && time.Since(lastChanged) > 300*time.Millisecond {
 			previous = current
 			lastChanged = tickTime
 			if current != 0 {
