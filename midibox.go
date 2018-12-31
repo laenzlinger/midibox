@@ -1,7 +1,6 @@
 package main
 
 import (
-	"time"
 	"fmt"
 	"log"
 
@@ -27,17 +26,19 @@ func main() {
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
 
+	var note byte
 	for i := 0; i < 20; i++ {
 		select {
 		case u := <-upDown:
 			display.DrawText(fmt.Sprintf("%v", u))
 		case j := <-joystick:
-			go func() {
-				note := 0x3c + byte(j.Direction)
-				md.NoteOn(note)
-				time.Sleep(300*time.Millisecond)
+			if j.DirectionChanged {
 				md.NoteOff(note)
-			}()
+				if j.Direction != keyboard.Center {
+					note = 0x3c + byte(j.Direction)
+					md.NoteOn(note)
+				}
+			}
 		}
 	}
 

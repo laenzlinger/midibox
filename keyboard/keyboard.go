@@ -83,8 +83,10 @@ func (dir JoystickDirection) String() string {
 
 // Joystick is sent when a joystick action is detected.
 type Joystick struct {
-	Direction JoystickDirection
-	Fire      bool
+	Direction        JoystickDirection
+	DirectionChanged bool
+	Fire             bool
+	FireChanged      bool
 }
 
 func (j Joystick) String() string {
@@ -176,17 +178,14 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 			Direction: defineJoystickDirection(b),
 			Fire:      b.fire.pressed(),
 		}
-
-		// debounce
-		if current != previous && time.Since(lastChanged) > 200*time.Millisecond {
+		directionChanged := current.Direction != previous.Direction
+		fireChanged := current.Fire != previous.Fire
+		debounced := time.Since(lastChanged) > 200*time.Millisecond
+		if (directionChanged || fireChanged) && debounced {
+			current.DirectionChanged = directionChanged
+			current.FireChanged = fireChanged
 			previous = current
 			lastChanged = tickTime
-			if current != inactiveJoystick {
-				joystick <- current
-			}
-		}
-		// repeat
-		if current != inactiveJoystick && time.Since(lastChanged) > 1000*time.Millisecond {
 			joystick <- current
 		}
 	}
