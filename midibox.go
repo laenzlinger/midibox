@@ -24,14 +24,13 @@ func main() {
 	md := midi.Open()
 	defer md.Close()
 
-	upDown := keyboard.OpenUpDown()
-	joystick := keyboard.OpenJoystick()
+	keyboard := keyboard.OpenKeyboard()
 
 	for i := 0; i < 20; i++ {
 		select {
-		case u := <-upDown:
+		case u := <-keyboard.UpDown:
 			display.DrawText(fmt.Sprintf("%v", u))
-		case j := <-joystick:
+		case j := <-keyboard.Joystick:
 			go func() {
 				note := 0x3c + byte(j.Direction)
 				md.NoteOn(note)

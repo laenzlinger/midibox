@@ -229,3 +229,18 @@ func OpenJoystick() chan Joystick {
 	go watchJoystick(joystick, buttons)
 	return joystick
 }
+
+// Keyboard represents a collection of channels to recieve different keyboard events.
+type Keyboard struct {
+	UpDown chan UpDown
+	Joystick chan Joystick
+}
+
+// OpenKeyboard opens all channels to the keyboard.
+func OpenKeyboard() Keyboard {
+
+	upDown := OpenUpDown()
+	joystick := OpenJoystick()
+
+	return Keyboard{UpDown: upDown, Joystick: joystick}
+}
