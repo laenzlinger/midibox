@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 	"github.com/laenzlinger/midibox/midi"
+	"github.com/laenzlinger/midibox/preset"
 
 	"periph.io/x/periph/host"
 )
@@ -26,17 +26,44 @@ func main() {
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
 
-	var note byte
-	for i := 0; i < 20; i++ {
+	presets := preset.AllPresets()
+	var current int
+	var active bool
+
+	display.DrawText("Select Preset", presets[current].Name())
+
+	for i := 0; i < 50; i++ {
 		select {
 		case u := <-upDown:
-			display.DrawText(fmt.Sprintf("%v", u))
+			if active {
+				if u == keyboard.Both {
+					active = false
+					display.DrawText("Select Preset", presets[current].Name())
+					presets[current].Shutdown()
+				} else {
+					presets[current].OnUpDwon(u)
+				}
+			}
 		case j := <-joystick:
-			if j.DirectionChanged {
-				md.NoteOff(note)
-				if j.Direction != keyboard.Center {
-					note = 0x3c + byte(j.Direction)
-					md.NoteOn(note)
+			if active {
+				presets[current].OnJoystick(j)
+			} else {
+				if j.Direction == keyboard.North {
+					current--
+					if current < 0 {
+						current = len(presets) - 1
+					}
+					display.DrawText("Select Preset", presets[current].Name())
+				} else if j.Direction == keyboard.South {
+					current++
+					if current >= len(presets) {
+						current = 0
+					}
+					display.DrawText("Select Preset", presets[current].Name())
+				} else if j.Fire && j.FireChanged {
+					display.DrawText("Active Preset", presets[current].Name())
+					presets[current].Init(md)
+					active = true
 				}
 			}
 		}
