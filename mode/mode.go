@@ -17,8 +17,8 @@ type Mode interface {
 	Exit() Mode
 }
 
-// InitialMode returns the inital mode.
-func InitialMode(display display.Display) Mode {
+// Initial returns the inital mode.
+func Initial(display display.Display) Mode {
 	m := selectPreset{}
 	return m.Enter(display)
 }

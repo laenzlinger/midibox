@@ -22,18 +22,16 @@ func main() {
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
 
-	
-    active := mode.InitialMode(display)
+    mode := mode.Initial(display)
+	defer mode.Exit()
 
 	for i := 0; i < 50; i++ {
 		select {
 		case u := <-upDown:
-			active = active.OnUpDwon(u)
+			mode = mode.OnUpDwon(u)
 		case j := <-joystick:
-			active = active.OnJoystick(j)
+			mode = mode.OnJoystick(j)
 		}
 	}
-
-	active.Exit()
 
 }
