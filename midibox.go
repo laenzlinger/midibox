@@ -1,8 +1,12 @@
 package main
 
 import (
-	"github.com/laenzlinger/midibox/mode"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/laenzlinger/midibox/mode"
 
 	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
@@ -11,6 +15,9 @@ import (
 )
 
 func main() {
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
 	if _, err := host.Init(); err != nil {
 		log.Fatal(err)
@@ -22,15 +29,18 @@ func main() {
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
 
-    mode := mode.Initial(display)
+	mode := mode.Initial(display)
 	defer mode.Exit()
 
-	for i := 0; i < 50; i++ {
+	run := true
+	for run {
 		select {
 		case u := <-upDown:
 			mode = mode.OnUpDwon(u)
 		case j := <-joystick:
 			mode = mode.OnJoystick(j)
+		case <-sig:
+			run = false
 		}
 	}
 
