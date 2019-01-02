@@ -69,4 +69,6 @@ func main() {
 		}
 	}
 
+	presets[current].Shutdown()
+
 }

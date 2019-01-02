@@ -16,8 +16,7 @@ type Preset interface {
 // AllPresets that are registered
 func AllPresets() []Preset {
 	return []Preset{
-		&chromaticScale{base: 0x3c},
-		&chromaticScale{base: 0x3e},
-		&chromaticScale{base: 0x40},
+		&chromaticScale{},
+		&majorScale{},
 	}
 }
