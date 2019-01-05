@@ -26,6 +26,7 @@ func main() {
 	display := display.Open()
 	defer display.Clear()
 
+	// TODO: refacter the API to let the client define the channels
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
 
