@@ -2,27 +2,36 @@ package midi
 
 import (
 	"fmt"
-	"log"
-	"net"
+
+	"github.com/grandcat/zeroconf"
+	"github.com/laenzlinger/go-midi-rtp/session"
 )
 
 // Driver represents the midi connections
 type Driver struct {
-	conn net.Conn
+	zeroConfServer *zeroconf.Server
+	midiRtpSession *session.MIDINetworkSession
 }
 
 // Open the midi drivers
 func Open() Driver {
-	conn, err := net.Dial("udp", "127.0.0.1:5006")
+	port := 5005
+	bonjourName := "midibox"
+	server, err := zeroconf.Register(bonjourName, "_apple-midi._udp", "local.", port, []string{"txtv=0", "lo=1", "la=2"}, nil)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	return Driver{ conn: conn }
+	session := session.Start(bonjourName, uint16(port))
+	return Driver{
+		zeroConfServer: server,
+		midiRtpSession: session,
+	}
 }
 
 // Close the midi drivers
-func (md Driver) Close()  {
-	md.conn.Close()
+func (md Driver) Close() {
+	md.midiRtpSession.End()
+	md.zeroConfServer.Shutdown()
 }
 
 // Note sends a note midi message
@@ -37,13 +46,13 @@ func (md Driver) Note(on bool, note byte) {
 // NoteOn sends a note on midi message
 func (md Driver) NoteOn(note byte) {
 	fmt.Println("note on: ", note)
-	var noteOn = []byte{0xaa, 0x96, note, 0x7f}
-	md.conn.Write(noteOn)
+	noteOn := []byte{0x96, note, 0x7f}
+	md.midiRtpSession.SendMIDIPayload(noteOn)
 }
 
 // NoteOff sends a Note off midi message
 func (md Driver) NoteOff(note byte) {
 	fmt.Println("note off:", note)
-	var noteOff = []byte{0xaa, 0x86, note, 0x7f}
-	md.conn.Write(noteOff)
+	noteOff := []byte{0x86, note, 0x7f}
+	md.midiRtpSession.SendMIDIPayload(noteOff)
 }

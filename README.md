@@ -11,6 +11,4 @@ some buttons to get started without any need to do any soldering.
 
 The hardware is accessed by using the [periph](https://periph.io) hardware abstraction library.
 
-The final gaol is to also implement implement the RTP-MIDI in go. Currently it uses an external
-[RaveloxMIDI](https://github.com/ravelox/pimidi/tree/master/raveloxmidi) process to communicate the midi
-signal over the air (WLAN).
+This project is used to demonstrate the [go implementation of the RTP-MIDI protocol](https://github.com/laenzlinger/go-midi-rtp).
