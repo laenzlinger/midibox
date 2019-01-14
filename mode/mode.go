@@ -7,6 +7,8 @@ import (
 	"github.com/laenzlinger/midibox/preset"
 )
 
+var midiDriver midi.Driver
+
 // Mode represents the current mode of operation of the midibox
 type Mode interface {
 	// OnJoystick reacts on Joystick input
@@ -19,8 +21,14 @@ type Mode interface {
 
 // Initial returns the inital mode.
 func Initial(display display.Display) Mode {
+	midiDriver = midi.Open()
 	m := selectPreset{}
 	return m.Enter(display)
+}
+
+// Shutdown the current mode.
+func Shutdown()  {
+	midiDriver.Close()
 }
 
 // SelectPreset is the mode which allows to select the preset.
@@ -62,15 +70,13 @@ func (m *selectPreset) Exit() Mode {
 type playMode struct {
 	display display.Display
 	preset  preset.Preset
-	driver  midi.Driver
 }
 
 func (m *playMode) Enter(display display.Display, preset preset.Preset) Mode {
 	m.preset = preset
 	m.display = display
-	m.driver = midi.Open()
 	m.display.DrawText("Active Preset", m.preset.Name())
-	m.preset.Init(m.driver)
+	m.preset.Init(midiDriver)
 	return m
 }
 
@@ -89,7 +95,6 @@ func (m *playMode) OnUpDwon(u keyboard.UpDown) Mode {
 
 func (m *playMode) Exit() Mode {
 	m.preset.Shutdown()
-	m.driver.Close()
 	next := selectPreset{}
 	return next.Enter(m.display)
 }
