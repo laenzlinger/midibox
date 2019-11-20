@@ -10,7 +10,8 @@ type Preset interface {
 	Name() string
 	Init(md midi.Driver)
 	OnJoystick(j keyboard.Joystick)
-	OnUpDwon(j keyboard.UpDown)
+	OnUpDwon(u keyboard.UpDown)
+	OnFootKey(f keyboard.FootKey)
 	Shutdown()
 }
 
@@ -23,6 +24,7 @@ type Presets struct {
 // AllPresets that are registered.
 func AllPresets() Presets {
 	all := []Preset{
+		&transport{},
 		&chromaticScale{},
 		&majorScale{},
 	}

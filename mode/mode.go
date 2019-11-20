@@ -15,6 +15,8 @@ type Mode interface {
 	OnJoystick(j keyboard.Joystick) Mode
 	// OnUpDown reacts on UpDown input
 	OnUpDwon(u keyboard.UpDown) Mode
+	// OnFootKey reacts on FootKey input
+	OnFootKey(u keyboard.FootKey) Mode
 	// Exit the mode
 	Exit() Mode
 }
@@ -62,6 +64,10 @@ func (m *selectPreset) OnUpDwon(u keyboard.UpDown) Mode {
 	return m
 }
 
+func (m *selectPreset) OnFootKey(u keyboard.FootKey) Mode {
+	return m
+}
+
 func (m *selectPreset) Exit() Mode {
 	return m
 }
@@ -86,10 +92,15 @@ func (m *playMode) OnJoystick(j keyboard.Joystick) Mode {
 }
 
 func (m *playMode) OnUpDwon(u keyboard.UpDown) Mode {
-	if u == keyboard.Both {		
+	if u == keyboard.Down {
 		return m.Exit()
 	}
 	m.preset.OnUpDwon(u)
+	return m
+}
+
+func (m *playMode) OnFootKey(f keyboard.FootKey) Mode {
+	m.preset.OnFootKey(f)
 	return m
 }
 

@@ -29,6 +29,7 @@ func main() {
 	// TODO: refacter the API to let the client define the channels
 	upDown := keyboard.OpenUpDown()
 	joystick := keyboard.OpenJoystick()
+	footkey := keyboard.OpenFootKeys()
 
 	m := mode.Initial(display)
 	defer mode.Shutdown()
@@ -40,6 +41,8 @@ func main() {
 			m = m.OnUpDwon(u)
 		case j := <-joystick:
 			m = m.OnJoystick(j)
+		case f := <- footkey:
+			m = m.OnFootKey(f)
 		case <-sig:
 			m.Exit()
 			run = false

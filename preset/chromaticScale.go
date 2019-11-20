@@ -1,15 +1,16 @@
 package preset
 
-import ( 
+import (
 	"fmt"
+
 	"github.com/laenzlinger/midibox/keyboard"
-     "github.com/laenzlinger/midibox/midi"
+	"github.com/laenzlinger/midibox/midi"
 )
 
 type chromaticScale struct {
-	base byte
+	base    byte
 	current byte
-	md midi.Driver
+	md      midi.Driver
 }
 
 func (p chromaticScale) Name() string {
@@ -20,6 +21,9 @@ func (p *chromaticScale) Init(md midi.Driver) {
 	p.current = 0
 	p.base = 0x3c
 	p.md = md
+}
+
+func (p *chromaticScale) OnFootKey(f keyboard.FootKey) {
 }
 
 func (p *chromaticScale) OnJoystick(j keyboard.Joystick) {
@@ -33,15 +37,15 @@ func (p *chromaticScale) OnJoystick(j keyboard.Joystick) {
 }
 
 func (p *chromaticScale) OnUpDwon(u keyboard.UpDown) {
-	if (u == keyboard.Up && p.base <= 72) {
+	if u == keyboard.Up && p.base <= 72 {
 		p.base++
-	} else if (u == keyboard.Down && p.base >= 60) {
+	} else if u == keyboard.Down && p.base >= 60 {
 		p.base--
 	}
 }
 
 func (p *chromaticScale) Shutdown() {
-	if (p.current > 0) {
+	if p.current > 0 {
 		p.md.NoteOff(p.current)
 		p.current = 0
 	}
