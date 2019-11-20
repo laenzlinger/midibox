@@ -14,3 +14,4 @@ clean:
 	rm -f $(BINARY_NAME)
 deploy: build
 	scp $(BINARY_NAME) pi@midibox:
+	rm -f $(BINARY_NAME)
