@@ -17,15 +17,17 @@ This project is used to demonstrate the [go implementation of the RTP-MIDI proto
 
 Coneection of the DigiTech Control SEVEN switches:
 
-| Key    | Color   | Pin   |
-|--------|---------|-------|
-| 0      | türkis  |       |
-| 1      | violett |       |
-| 2      | violett |       |
-| 3      | türkis  |       |
-| 4      | white   |       |
-| UP     | blue    |       |
-| DOWN   | blue    |       |
+| Key    | Color   | Pin   | Chip   |
+|--------|---------|-------|--------|
+| 0      | türkis  |  12   | BCM 18 |
+| 1      | violett |  18   | BCM 24 |
+| 2      | violett |  22   | BCM 25 |
+| 3      | türkis  |  32   | BCM 12 |
+| 4      | white   |  36   | BCM 16 |
+| UP     | blue    |  33   | BCM 13 |
+| DOWN   | blue    |  37   | BCM 26 |
 
-Upper Row Ground: white
-Lower Row Ground: orange
+see [pinout](https://pinout.xyz/pinout/oled_bonnet)
+
+Upper Row Ground: white:  (Pin 20)
+Lower Row Ground: orange  (Pin 30)
