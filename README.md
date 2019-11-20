@@ -12,3 +12,20 @@ some buttons to get started without any need to do any soldering.
 The hardware is accessed by using the [periph](https://periph.io) hardware abstraction library.
 
 This project is used to demonstrate the [go implementation of the RTP-MIDI protocol](https://github.com/laenzlinger/go-midi-rtp).
+
+## Hardware
+
+Coneection of the DigiTech Control SEVEN switches:
+
+| Key    | Color   | Pin   |
+|--------|---------|-------|
+| 0      | türkis  |       |
+| 1      | violett |       |
+| 2      | violett |       |
+| 3      | türkis  |       |
+| 4      | white   |       |
+| UP     | blue    |       |
+| DOWN   | blue    |       |
+
+Upper Row Ground: white
+Lower Row Ground: orange
