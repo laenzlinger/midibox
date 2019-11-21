@@ -1,0 +1,9 @@
+[Unit]
+Description=Midibox
+
+[Service]
+ExecStart=/home/pi/midibox
+User=pi
+
+[Install]
+WantedBy=multi-user.target

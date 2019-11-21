@@ -31,3 +31,12 @@ see [pinout](https://pinout.xyz/pinout/oled_bonnet)
 
 Upper Row Ground: white:  (Pin 20)
 Lower Row Ground: orange  (Pin 30)
+
+## installation
+
+``` bash
+scp midibox.service pi@midibox
+ssh pi@midibox sudo mv midibox.service /etc/systemd/system/midibox.service
+ssh pi@midibox sudo systemctl enable midibox.service
+make deploy
+```

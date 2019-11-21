@@ -3,6 +3,7 @@ GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
 BINARY_NAME=midibox
+MIDIBOX=pi@midibox
 
 all: test build
 build:
@@ -13,5 +14,7 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 deploy: build
-	scp $(BINARY_NAME) pi@midibox:
+	ssh $(MIDIBOX) sudo service midibox stop
+	scp $(BINARY_NAME) $(MIDOBOX):
+	ssh $(MIDIBOX) sudo service midibox start
 	rm -f $(BINARY_NAME)

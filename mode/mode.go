@@ -87,14 +87,14 @@ func (m *playMode) Enter(display display.Display, preset preset.Preset) Mode {
 }
 
 func (m *playMode) OnJoystick(j keyboard.Joystick) Mode {
+	if j.Fire && j.FireChanged {
+		return m.Exit()
+	}
 	m.preset.OnJoystick(j)
 	return m
 }
 
 func (m *playMode) OnUpDwon(u keyboard.UpDown) Mode {
-	if u == keyboard.Down {
-		return m.Exit()
-	}
 	m.preset.OnUpDwon(u)
 	return m
 }
