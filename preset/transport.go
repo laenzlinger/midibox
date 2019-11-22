@@ -3,6 +3,7 @@ package preset
 import (
 	"bytes"
 	"fmt"
+	"time"
 
 	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
@@ -32,12 +33,12 @@ const (
 // Send MMC transport messages
 // see https://en.wikipedia.org/wiki/MIDI_Machine_Control
 type transport struct {
-	md midi.Driver
+	md      midi.Driver
 	display display.Display
 }
 
 func (p transport) Name() string {
-	return fmt.Sprintf("Transport")
+	return fmt.Sprintf("MMC Transport")
 }
 
 func (p *transport) Init(md midi.Driver, display display.Display) {
@@ -46,21 +47,22 @@ func (p *transport) Init(md midi.Driver, display display.Display) {
 }
 
 func (p *transport) OnFootKey(f keyboard.FootKey) {
-	fmt.Println("Footkey: ", f)
 	if f == keyboard.Two {
-		p.display.DrawText("Stop")
+		go p.popupMessage("Stop")
 		p.sendMMCMessage(stop)
 	} else if f == keyboard.Three {
-		p.display.DrawText("Play")
+		go p.popupMessage("Play")
 		p.sendMMCMessage(play)
+	} else if f == keyboard.Four {
+		go p.popupMessage("Record")
+		p.sendMMCMessage(recordStrobe)
 	} else if f == keyboard.UP {
-		p.display.DrawText("Rewind")
+		go p.popupMessage("Rewind")
 		p.sendMMCMessage(rewind)
 	} else if f == keyboard.DOWN {
-		p.display.DrawText("Forward")
+		go p.popupMessage("Forward")
 		p.sendMMCMessage(fastForward)
 	}
-
 }
 
 func (p *transport) OnJoystick(j keyboard.Joystick) {
@@ -73,6 +75,13 @@ func (p *transport) Shutdown() {
 }
 
 func (p *transport) stop() {
+}
+
+func (p *transport) popupMessage(m string) {
+	p.display.DrawLargeText(m)
+	time.Sleep(500 * time.Millisecond)
+	p.display.Clear()
+	p.display.DrawText("", p.Name())
 }
 
 func (p *transport) sendMMCMessage(command mmcCommandID2) {

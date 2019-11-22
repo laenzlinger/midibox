@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/pbnjay/pixfont"
+	"github.com/disintegration/imaging"
 
 	"periph.io/x/periph/conn/i2c/i2creg"
 	"periph.io/x/periph/devices/ssd1306"
@@ -15,6 +16,8 @@ import (
 type Display struct {
 	dev *ssd1306.Dev
 }
+
+const fontHeight = 10
 
 // Open a new hander for the display device
 func Open() Display {
@@ -37,9 +40,23 @@ func (d Display) DrawText(lines ...string) {
 	font := pixfont.DefaultFont
 	font.SetVariableWidth(true)
 	for i, line := range lines {
-		font.DrawString(img, 0, i*11, line, color.White)
+		font.DrawString(img, 0, i*(fontHeight+1), line, color.White)
 	}
 	d.drawImage(img)
+}
+
+// DrawLargeText will draw double sized text
+func (d Display) DrawLargeText(lines ...string) {
+	var img = image.NewRGBA(image.Rect(0, 0, 64, 32))
+	font := pixfont.DefaultFont
+	font.SetVariableWidth(true)
+
+	ystart := int((32 - fontHeight*len(lines)) / (len(lines) +1))
+	for i, line := range lines {
+		font.DrawString(img, 0, ystart + i*(fontHeight+1), line, color.White)
+	}
+	dst := imaging.Resize(img, 128, 64, imaging.Lanczos)
+	d.dev.Draw(dst.Bounds(), dst, image.Point{})
 }
 
 // Clear the display
