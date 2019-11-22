@@ -56,3 +56,9 @@ func (md Driver) NoteOff(note byte) {
 	noteOff := []byte{0x86, note, 0x7f}
 	md.midiRtpSession.SendMIDIPayload(noteOff)
 }
+
+// SendRawMessage sends raw midi payload
+func (md Driver) SendRawMessage(m []byte) {
+	md.midiRtpSession.SendMIDIPayload(m)
+}
+

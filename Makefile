@@ -23,7 +23,7 @@ clean: ## clean all temporary files
 
 deploy: build ## deploy to the midibox
 	ssh $(MIDIBOX) sudo service midibox stop
-	scp $(BINARY_NAME) $(MIDOBOX):
+	scp $(BINARY_NAME) $(MIDIBOX):
 	ssh $(MIDIBOX) sudo service midibox start
 	rm -f $(BINARY_NAME)
 
