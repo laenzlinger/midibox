@@ -26,7 +26,6 @@ type Presets struct {
 func AllPresets() Presets {
 	all := []Preset{
 		&transport{},
-		&chromaticScale{},
 		&majorScale{},
 	}
 	return Presets{

@@ -48,7 +48,7 @@ func (p *transport) Init(md midi.Driver, display display.Display) {
 
 func (p *transport) OnFootKey(f keyboard.FootKey) {
 	switch f {
-	case keyboard.One:
+	case keyboard.Two:
 		go p.popupMessage("Stop")
 		p.sendMMCMessage(stop)
 	case keyboard.Three:

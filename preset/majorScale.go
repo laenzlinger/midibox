@@ -2,6 +2,7 @@ package preset
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
@@ -46,6 +47,29 @@ func (p *majorScale) OnJoystick(j keyboard.Joystick) {
 }
 
 func (p *majorScale) OnFootKey(f keyboard.FootKey) {
+	switch f {
+	case keyboard.Two:
+		go p.play(0)
+	case keyboard.Three:
+		go p.play(2)
+	case keyboard.Four:
+		go p.play(4)
+	case keyboard.DOWN:
+		go p.play(5)
+	case keyboard.Zero:
+		go p.play(7)
+	case keyboard.One:
+		go p.play(9)
+	case keyboard.UP:
+		go p.play(11)
+	}
+}
+
+func (p *majorScale) play(offset byte) {
+	p.current = p.base + offset
+	p.md.NoteOn(p.current)
+	time.Sleep(1*time.Second)
+	p.md.NoteOff(p.current)
 }
 
 func (p *majorScale) OnUpDwon(u keyboard.UpDown) {
