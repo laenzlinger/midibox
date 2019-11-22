@@ -47,19 +47,20 @@ func (p *transport) Init(md midi.Driver, display display.Display) {
 }
 
 func (p *transport) OnFootKey(f keyboard.FootKey) {
-	if f == keyboard.Two {
+	switch f {
+	case keyboard.One:
 		go p.popupMessage("Stop")
 		p.sendMMCMessage(stop)
-	} else if f == keyboard.Three {
+	case keyboard.Three:
 		go p.popupMessage("Play")
 		p.sendMMCMessage(play)
-	} else if f == keyboard.Four {
+	case keyboard.Four: 
 		go p.popupMessage("Record")
 		p.sendMMCMessage(recordStrobe)
-	} else if f == keyboard.UP {
+	case keyboard.UP:
 		go p.popupMessage("Rewind")
 		p.sendMMCMessage(rewind)
-	} else if f == keyboard.DOWN {
+	case keyboard.DOWN:
 		go p.popupMessage("Forward")
 		p.sendMMCMessage(fastForward)
 	}
