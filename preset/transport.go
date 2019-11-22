@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
+	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 	"github.com/laenzlinger/midibox/midi"
 )
@@ -32,25 +33,31 @@ const (
 // see https://en.wikipedia.org/wiki/MIDI_Machine_Control
 type transport struct {
 	md midi.Driver
+	display display.Display
 }
 
 func (p transport) Name() string {
 	return fmt.Sprintf("Transport")
 }
 
-func (p *transport) Init(md midi.Driver) {
+func (p *transport) Init(md midi.Driver, display display.Display) {
 	p.md = md
+	p.display = display
 }
 
 func (p *transport) OnFootKey(f keyboard.FootKey) {
 	fmt.Println("Footkey: ", f)
 	if f == keyboard.Two {
+		p.display.DrawText("Stop")
 		p.sendMMCMessage(stop)
 	} else if f == keyboard.Three {
+		p.display.DrawText("Play")
 		p.sendMMCMessage(play)
 	} else if f == keyboard.UP {
+		p.display.DrawText("Rewind")
 		p.sendMMCMessage(rewind)
 	} else if f == keyboard.DOWN {
+		p.display.DrawText("Forward")
 		p.sendMMCMessage(fastForward)
 	}
 

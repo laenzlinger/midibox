@@ -1,6 +1,7 @@
 package preset
 
 import (
+	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 	"github.com/laenzlinger/midibox/midi"
 )
@@ -8,7 +9,7 @@ import (
 // Preset defines a certain behavior of the midibox.
 type Preset interface {
 	Name() string
-	Init(md midi.Driver)
+	Init(md midi.Driver, display display.Display)
 	OnJoystick(j keyboard.Joystick)
 	OnUpDwon(u keyboard.UpDown)
 	OnFootKey(f keyboard.FootKey)

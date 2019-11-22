@@ -86,7 +86,7 @@ func (m *playMode) Enter(display display.Display, preset preset.Preset) Mode {
 	m.preset = preset
 	m.display = display
 	m.display.DrawText("Active Preset", m.preset.Name())
-	m.preset.Init(midiDriver)
+	m.preset.Init(midiDriver, display)
 	return m
 }
 

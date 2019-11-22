@@ -3,6 +3,7 @@ package preset
 import (
 	"fmt"
 
+	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 	"github.com/laenzlinger/midibox/midi"
 )
@@ -17,7 +18,7 @@ func (p chromaticScale) Name() string {
 	return fmt.Sprintf("Chrom. Scale")
 }
 
-func (p *chromaticScale) Init(md midi.Driver) {
+func (p *chromaticScale) Init(md midi.Driver, display display.Display) {
 	p.current = 0
 	p.base = 0x3c
 	p.md = md

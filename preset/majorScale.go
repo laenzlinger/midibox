@@ -3,6 +3,7 @@ package preset
 import (
 	"fmt"
 
+	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 	"github.com/laenzlinger/midibox/midi"
 )
@@ -18,7 +19,7 @@ func (p majorScale) Name() string {
 	return fmt.Sprintf("Major Scale")
 }
 
-func (p *majorScale) Init(md midi.Driver) {
+func (p *majorScale) Init(md midi.Driver, display display.Display) {
 	p.current = 0
 	p.base = 0x3c
 	p.md = md
