@@ -71,6 +71,7 @@ func (p *transport) stop() {
 func (p *transport) sendMMCMessage(command mmcCommandID2) {
 	b := bytes.NewBuffer([]byte{})
 	b.WriteByte(0xF0) // SYSEX start
+	b.WriteByte(0x7F) // MMC
 	b.WriteByte(0x7F) // Device Id (7F => all)
 	b.WriteByte(0x06) // MMC command (0x07 is resposne)
 	b.WriteByte(byte(command))

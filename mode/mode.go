@@ -25,7 +25,7 @@ type Mode interface {
 func Initial(display display.Display) Mode {
 	midiDriver = midi.Open()
 	m := selectPreset{}
-	return m.Enter(display)
+	return m.Enter(display).SelectCurrentMode()
 }
 
 // Shutdown the current mode.
@@ -39,7 +39,7 @@ type selectPreset struct {
 	presets preset.Presets
 }
 
-func (m *selectPreset) Enter(display display.Display) Mode {
+func (m *selectPreset) Enter(display display.Display) *selectPreset {
 	m.presets = preset.AllPresets()
 	m.display = display
 	m.display.DrawText("Select Preset", m.presets.Current().Name())
@@ -48,8 +48,7 @@ func (m *selectPreset) Enter(display display.Display) Mode {
 
 func (m *selectPreset) OnJoystick(j keyboard.Joystick) Mode {
 	if j.Fire && j.FireChanged {
-		next := playMode{}
-		return next.Enter(m.display, m.presets.Current()) 
+		return m.SelectCurrentMode()
 	}
 	if j.Direction == keyboard.North {
 		m.presets.Previous()
@@ -70,6 +69,11 @@ func (m *selectPreset) OnFootKey(u keyboard.FootKey) Mode {
 
 func (m *selectPreset) Exit() Mode {
 	return m
+}
+
+func (m *selectPreset) SelectCurrentMode() Mode {
+	next := playMode{}
+	return next.Enter(m.display, m.presets.Current())
 }
 
 // playMode is the mode where the selected preset is played

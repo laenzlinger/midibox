@@ -15,6 +15,6 @@ clean:
 	rm -f $(BINARY_NAME)
 deploy: build
 	ssh $(MIDIBOX) sudo service midibox stop
-	scp $(BINARY_NAME) $(MIDOBOX):
+	scp $(BINARY_NAME) $(MIDIBOX):
 	ssh $(MIDIBOX) sudo service midibox start
 	rm -f $(BINARY_NAME)
