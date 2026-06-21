@@ -5,18 +5,19 @@ import (
 )
 
 // FootKey is sent when one of the foot key buttons is pressed.
-//  --------------------------------------
-//  | DigiTech             CONTROL SEVEN |
-//  |                                    |
-//  |  display    [0]     [1]    [ up ]  |
-//  |                                    |
-//  |    [2]      [3]     [4]    [down]  |
-//  --------------------------------------
+//
+//	--------------------------------------
+//	| DigiTech             CONTROL SEVEN |
+//	|                                    |
+//	|  display    [0]     [1]    [ up ]  |
+//	|                                    |
+//	|    [2]      [3]     [4]    [down]  |
+//	--------------------------------------
 //
 // Implemented Behaviour:
-// * Only one of the buttons can be active at a given time
-// * Only pressing the button down edge is detected
-// * when activating for more than one second => the event is triggered every 100ms again
+//   - Only one of the buttons can be active at a given time
+//   - Only pressing the button down edge is detected
+//   - when activating for more than one second => the event is triggered every 100ms again
 type FootKey uint8
 
 const (
@@ -47,7 +48,7 @@ func (fk FootKey) String() string {
 		"down",
 	}
 	if fk < Zero || fk > DOWN {
-		return "Unknown"
+		return unknown
 	}
 	return names[fk]
 }
@@ -58,7 +59,6 @@ type footKeyButtons struct {
 	two   buttonPin
 	three buttonPin
 	four  buttonPin
-	five  buttonPin
 	up    buttonPin
 	down  buttonPin
 }
@@ -71,25 +71,26 @@ func watchFootKeys(footKey chan<- FootKey, b footKeyButtons) {
 	for tickTime := range keyboardTicker.C {
 		var result FootKey
 		var current = -1
-		if b.zero.pressed() {
+		switch {
+		case b.zero.pressed():
 			current = 0
 			result = Zero
-		} else if b.one.pressed() {
+		case b.one.pressed():
 			current = 1
 			result = One
-		} else if b.two.pressed() {
+		case b.two.pressed():
 			current = 2
 			result = Two
-		} else if b.three.pressed() {
+		case b.three.pressed():
 			current = 3
 			result = Three
-		} else if b.four.pressed() {
+		case b.four.pressed():
 			current = 4
 			result = Four
-		} else if b.up.pressed() {
+		case b.up.pressed():
 			current = 5
 			result = UP
-		} else if b.down.pressed() {
+		case b.down.pressed():
 			current = 6
 			result = DOWN
 		}
@@ -110,7 +111,6 @@ func watchFootKeys(footKey chan<- FootKey, b footKeyButtons) {
 
 // OpenFootKeys open a channel that sends FootKey events
 func OpenFootKeys() chan FootKey {
-
 	buttons := footKeyButtons{
 		zero:  registerPin("GPIO18"),
 		one:   registerPin("GPIO24"),

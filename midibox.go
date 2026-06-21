@@ -11,11 +11,10 @@ import (
 	"github.com/laenzlinger/midibox/display"
 	"github.com/laenzlinger/midibox/keyboard"
 
-	"periph.io/x/periph/host"
+	"periph.io/x/host/v3"
 )
 
 func main() {
-
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 

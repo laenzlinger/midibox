@@ -2,7 +2,6 @@ package preset
 
 import (
 	"bytes"
-	"fmt"
 	"time"
 
 	"github.com/laenzlinger/midibox/display"
@@ -38,7 +37,7 @@ type transport struct {
 }
 
 func (p transport) Name() string {
-	return fmt.Sprintf("MMC Transport")
+	return "MMC Transport"
 }
 
 func (p *transport) Init(md midi.Driver, display display.Display) {
@@ -54,7 +53,7 @@ func (p *transport) OnFootKey(f keyboard.FootKey) {
 	case keyboard.Three:
 		go p.popupMessage("Play")
 		p.sendMMCMessage(play)
-	case keyboard.Four: 
+	case keyboard.Four:
 		go p.popupMessage("Record")
 		p.sendMMCMessage(recordStrobe)
 	case keyboard.UP:
@@ -73,9 +72,6 @@ func (p *transport) OnUpDwon(u keyboard.UpDown) {
 }
 
 func (p *transport) Shutdown() {
-}
-
-func (p *transport) stop() {
 }
 
 func (p *transport) popupMessage(m string) {

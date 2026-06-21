@@ -1,7 +1,6 @@
 package preset
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/laenzlinger/midibox/display"
@@ -17,7 +16,7 @@ type majorScale struct {
 }
 
 func (p majorScale) Name() string {
-	return fmt.Sprintf("Major Scale")
+	return "Major Scale"
 }
 
 func (p *majorScale) Init(md midi.Driver, display display.Display) {

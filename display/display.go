@@ -8,8 +8,8 @@ import (
 	"github.com/pbnjay/pixfont"
 	"github.com/disintegration/imaging"
 
-	"periph.io/x/periph/conn/i2c/i2creg"
-	"periph.io/x/periph/devices/ssd1306"
+	"periph.io/x/conn/v3/i2c/i2creg"
+	"periph.io/x/devices/v3/ssd1306"
 )
 
 // Display wrappes the underlying device and offers operations to interact with the display
@@ -51,12 +51,14 @@ func (d Display) DrawLargeText(lines ...string) {
 	font := pixfont.DefaultFont
 	font.SetVariableWidth(true)
 
-	ystart := int((32 - fontHeight*len(lines)) / (len(lines) +1))
+	ystart := (32 - fontHeight*len(lines)) / (len(lines) + 1)
 	for i, line := range lines {
 		font.DrawString(img, 0, ystart + i*(fontHeight+1), line, color.White)
 	}
 	dst := imaging.Resize(img, 128, 64, imaging.Lanczos)
-	d.dev.Draw(dst.Bounds(), dst, image.Point{})
+	if err := d.dev.Draw(dst.Bounds(), dst, image.Point{}); err != nil {
+		log.Printf("draw error: %v", err)
+	}
 }
 
 // Clear the display
@@ -69,5 +71,7 @@ func newEmptyImage() *image.RGBA {
 }
 
 func (d Display) drawImage(img *image.RGBA) {
-	d.dev.Draw(img.Bounds(), img, image.Point{})
+	if err := d.dev.Draw(img.Bounds(), img, image.Point{}); err != nil {
+		log.Printf("draw error: %v", err)
+	}
 }

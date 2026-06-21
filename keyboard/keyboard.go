@@ -5,17 +5,20 @@ import (
 	"log"
 	"time"
 
-	"periph.io/x/periph/conn/gpio"
-	"periph.io/x/periph/conn/gpio/gpioreg"
+	"periph.io/x/conn/v3/gpio"
+	"periph.io/x/conn/v3/gpio/gpioreg"
 )
 
+const unknown = "Unknown"
+
 // UpDown is sent when one of the up/down buttons is pressed.
-//  -------------------
-//           |        |
-//   OLED    |     x  | up button
-//   display |  x     | down button
-//           |        |
-//  -------------------
+//
+//	-------------------
+//	         |        |
+//	 OLED    |     x  | up button
+//	 display |  x     | down button
+//	         |        |
+//	-------------------
 type UpDown uint8
 
 const (
@@ -34,19 +37,18 @@ func (upDown UpDown) String() string {
 		"both",
 	}
 	if upDown < Down || upDown > Both {
-		return "Unknown"
+		return unknown
 	}
 	return names[upDown]
 }
 
 // JoystickDirection represents the position of the joystick
 //
-//    NorthWest   North    NorthEast
-//               --------
-//  West        | Center |       East
-//               --------
-//    SouthWest   South   SouthEast
-//
+//	NorthWest   North    NorthEast
+//	           --------
+//	West      | Center |       East
+//	           --------
+//	SouthWest   South   SouthEast
 type JoystickDirection uint8
 
 const (
@@ -83,7 +85,7 @@ func (dir JoystickDirection) String() string {
 		"north-west",
 	}
 	if dir < Center || dir > NorthWest {
-		return "Unknown"
+		return unknown
 	}
 	return names[dir]
 }
@@ -124,18 +126,19 @@ type upDownButtons struct {
 func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 	keyboardTicker := time.NewTicker(100 * time.Millisecond)
 
-	var previous = 0
+	var previous int
 	var lastChanged = time.Now()
 	for tickTime := range keyboardTicker.C {
 		var result UpDown
-		var current = 0
-		if b.up.pressed() && b.down.pressed() {
+		var current int
+		switch {
+		case b.up.pressed() && b.down.pressed():
 			current = 1
 			result = Both
-		} else if b.down.pressed() {
+		case b.down.pressed():
 			current = 2
 			result = Down
-		} else if b.up.pressed() {
+		case b.up.pressed():
 			current = 3
 			result = Up
 		}
@@ -156,7 +159,6 @@ func watchUpDown(upDown chan<- UpDown, b upDownButtons) {
 
 // OpenUpDown open a channel that sends UpDown events
 func OpenUpDown() chan UpDown {
-
 	buttons := upDownButtons{
 		up:   registerPin("GPIO6"),
 		down: registerPin("GPIO5"),
@@ -178,7 +180,6 @@ type joystickButtons struct {
 var inactiveJoystick = Joystick{Direction: Center, Fire: false}
 
 func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
-
 	keyboardTicker := time.NewTicker(50 * time.Millisecond)
 
 	var previous = inactiveJoystick
@@ -202,30 +203,30 @@ func watchJoystick(joystick chan<- Joystick, b joystickButtons) {
 }
 
 func defineJoystickDirection(b joystickButtons) JoystickDirection {
-	if b.north.pressed() && !b.east.pressed() && !b.west.pressed() {
+	switch {
+	case b.north.pressed() && !b.east.pressed() && !b.west.pressed():
 		return North
-	} else if b.east.pressed() && b.north.pressed() {
+	case b.east.pressed() && b.north.pressed():
 		return NorthEast
-	} else if b.east.pressed() && !b.north.pressed() && !b.south.pressed() {
+	case b.east.pressed() && !b.north.pressed() && !b.south.pressed():
 		return East
-	} else if b.east.pressed() && b.south.pressed() {
+	case b.east.pressed() && b.south.pressed():
 		return SouthEast
-	} else if b.south.pressed() && !b.west.pressed() && !b.east.pressed() {
+	case b.south.pressed() && !b.west.pressed() && !b.east.pressed():
 		return South
-	} else if b.south.pressed() && b.west.pressed() {
+	case b.south.pressed() && b.west.pressed():
 		return SouthWest
-	} else if b.west.pressed() && !b.north.pressed() && !b.south.pressed() {
+	case b.west.pressed() && !b.north.pressed() && !b.south.pressed():
 		return West
-	} else if b.north.pressed() && b.west.pressed() {
+	case b.north.pressed() && b.west.pressed():
 		return NorthWest
-	} else {
+	default:
 		return Center
 	}
 }
 
 // OpenJoystick open a channel that sends Joystick events
 func OpenJoystick() chan Joystick {
-
 	buttons := joystickButtons{
 		fire:  registerPin("GPIO4"),
 		north: registerPin("GPIO17"),

@@ -50,11 +50,12 @@ func (m *selectPreset) OnJoystick(j keyboard.Joystick) Mode {
 	if j.Fire && j.FireChanged {
 		return m.SelectCurrentMode()
 	}
-	if j.Direction == keyboard.North {
+	switch j.Direction {
+	case keyboard.North:
 		m.presets.Previous()
-	} else if j.Direction == keyboard.South {
+	case keyboard.South:
 		m.presets.Next()
-	}  
+	}
 	m.display.DrawText("Select Preset", m.presets.Current().Name())
 	return m
 }
